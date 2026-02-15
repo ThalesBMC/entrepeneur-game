@@ -1,0 +1,12 @@
+# Runtime data files (user-specific state)
+state.json
+today.json
+log.ndjson
+backlog.json
+autostart.log
+
+# Node
+node_modules/
+
+# OS
+.DS_Store

@@ -1,0 +1,18 @@
+{
+  "daily_effort_target_minutes": 35,
+  "daily_effort_max_minutes": 50,
+  "category_weights": {
+    "build": 1.0,
+    "ship": 1.25,
+    "reach": 1.2
+  },
+  "rarity": {
+    "common": 0.8,
+    "rare": 0.18,
+    "epic": 0.02
+  },
+  "git": {
+    "commit_xp": 2,
+    "tag_xp": 20
+  }
+}

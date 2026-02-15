@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuestGame</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.3/pixi.min.js"></script>
+</head>
+<body>
+  <div id="game-container"></div>
+  <div id="panel">
+    <!-- Power Rating + Menu Button -->
+    <div class="section power-section">
+      <div class="power-row">
+        <div class="power-rating">
+          <div class="power-label">PODER</div>
+          <div class="power-number" id="power-rating">0</div>
+          <div class="rank-badge" id="rank-badge"></div>
+        </div>
+        <button class="menu-btn" id="menu-btn" title="Gerenciar Quests">&#x2699;</button>
+      </div>
+    </div>
+
+    <!-- Revenue Display -->
+    <div class="section revenue-section" id="revenue-section" style="display:none">
+      <div class="revenue-label">REVENUE</div>
+      <div class="revenue-total" id="revenue-total">&euro;0.00</div>
+    </div>
+
+    <!-- Daily Goal -->
+    <div class="section daily-goal-section" id="daily-goal">
+      <span class="goal-pending">&#x1F3AF; Complete 1 quest hoje</span>
+    </div>
+
+    <!-- Streak Decay Warning -->
+    <div class="streak-warning" id="streak-warning" style="display:none"></div>
+
+    <div class="section" id="player-section">
+      <h3>Player</h3>
+      <div class="player-info">
+        <div class="level" id="p-level">1</div>
+        <div class="details">
+          <div>XP: <span id="p-xp">0</span> <span id="xp-progress" class="xp-progress-text"></span></div>
+          <div>Streak: <span id="p-streak" class="streak-badge">0</span></div>
+          <div class="streak-bonus-line"><span id="streak-bonus" class="streak-bonus"></span></div>
+          <div>Feitas: <span id="p-total">0</span></div>
+        </div>
+      </div>
+      <div class="xp-bar"><div class="fill" id="xp-fill" style="width:0%;background:#e2b714;"></div></div>
+      <div class="milestone" id="next-milestone"></div>
+    </div>
+
+    <div class="section">
+      <h3>Trilhas</h3>
+      <div class="tables-grid">
+        <div class="table-card" id="table-build" data-tooltip="Codar, criar features, design, prototipar">
+          <div class="cat-icon">&#x1F528;</div>
+          <div class="cat-name" style="color:#2ecc71">Build</div>
+          <div class="cat-desc">Criar & Codar</div>
+          <div class="cat-level">1</div>
+          <div class="cat-bar"><div class="cat-fill" style="width:0%;background:#2ecc71;"></div></div>
+          <div class="cat-progress">0/3</div>
+        </div>
+        <div class="table-card" id="table-ship" data-tooltip="Deploy, publicar, enviar para loja, go live">
+          <div class="cat-icon">&#x1F680;</div>
+          <div class="cat-name" style="color:#e67e22">Ship</div>
+          <div class="cat-desc">Entregar & Deployar</div>
+          <div class="cat-level">1</div>
+          <div class="cat-bar"><div class="cat-fill" style="width:0%;background:#e67e22;"></div></div>
+          <div class="cat-progress">0/3</div>
+        </div>
+        <div class="table-card" id="table-reach" data-tooltip="Marketing, redes sociais, conteudo, SEO, ads">
+          <div class="cat-icon">&#x1F3AF;</div>
+          <div class="cat-name" style="color:#3498db">Reach</div>
+          <div class="cat-desc">Marketing & Crescer</div>
+          <div class="cat-level">1</div>
+          <div class="cat-bar"><div class="cat-fill" style="width:0%;background:#3498db;"></div></div>
+          <div class="cat-progress">0/3</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="weekly-section">
+      <h3>Missoes Semanais</h3>
+      <div id="weekly-missions"></div>
+    </div>
+
+    <div class="section" id="quest-section">
+      <h3>Quest do Dia</h3>
+      <div id="quest-content"><span class="no-quest">Nenhuma quest ativa</span></div>
+    </div>
+
+    <div class="section">
+      <h3>&#x2694;&#xFE0F; Combate</h3>
+      <div class="combat-info">
+        <span>Inimigos eliminados: <strong id="enemies-killed">0</strong></span>
+        <div class="combat-hint">Clique nos inimigos no mapa!</div>
+      </div>
+    </div>
+
+    <div class="section" id="spin-section">
+      <h3>&#x1F3A1; Roleta Diaria</h3>
+      <div id="spin-content"></div>
+    </div>
+
+    <div class="section">
+      <h3>Fortuna</h3>
+      <div class="fortune-total" id="fortune-total">&#x1FA99; 0</div>
+      <div class="inventory" id="inventory"></div>
+    </div>
+
+    <div class="section" id="shop-section">
+      <h3>&#x1F3EA; Loja</h3>
+      <div class="shop-grid" id="shop-grid"></div>
+    </div>
+  </div>
+
+  <!-- Management Modal -->
+  <div id="mgmt-modal" class="mgmt-modal">
+    <div class="mgmt-modal-inner">
+      <div class="mgmt-header">
+        <div class="mgmt-tabs">
+          <button class="mgmt-tab active" data-tab="add">&#x2795; Adicionar</button>
+          <button class="mgmt-tab" data-tab="inbox">&#x1F4E5; Inbox</button>
+          <button class="mgmt-tab" data-tab="backlog">&#x1F4CB; Backlog</button>
+          <button class="mgmt-tab" data-tab="plan">&#x26A1; Planejar</button>
+          <button class="mgmt-tab" data-tab="grimorio">&#x1F4D6; Grimorio</button>
+          <button class="mgmt-tab" data-tab="eventos">&#x1F389; Eventos</button>
+        </div>
+        <button class="mgmt-close" id="mgmt-close">&times;</button>
+      </div>
+      <div class="mgmt-body">
+        <!-- Add Tab -->
+        <div class="mgmt-panel active" id="tab-add">
+          <div class="mgmt-add-form">
+            <input type="text" id="add-input" class="mgmt-input" placeholder="Descreva sua ideia..." autocomplete="off">
+            <button class="mgmt-btn-primary" id="add-btn">Adicionar ao Inbox</button>
+          </div>
+          <div class="mgmt-hint">Dica: descreva o que quer fazer. A categoria (Build/Ship/Reach) sera detectada automaticamente.</div>
+          <div id="add-feedback" class="mgmt-feedback"></div>
+        </div>
+        <!-- Inbox Tab -->
+        <div class="mgmt-panel" id="tab-inbox">
+          <div id="inbox-list" class="mgmt-list"></div>
+          <button class="mgmt-btn-primary" id="triage-btn" style="margin-top:12px">Processar Inbox → Backlog</button>
+          <div id="triage-feedback" class="mgmt-feedback"></div>
+        </div>
+        <!-- Backlog Tab -->
+        <div class="mgmt-panel" id="tab-backlog">
+          <div id="backlog-list" class="mgmt-list"></div>
+        </div>
+        <!-- Plan Tab -->
+        <div class="mgmt-panel" id="tab-plan">
+          <div id="plan-content"></div>
+        </div>
+        <!-- Grimorio Tab -->
+        <div class="mgmt-panel" id="tab-grimorio">
+          <div id="grimorio-content"></div>
+        </div>
+        <!-- Eventos Tab -->
+        <div class="mgmt-panel" id="tab-eventos">
+          <div id="eventos-content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Login Reward Popup -->
+  <div id="daily-popup" class="daily-popup">
+    <div class="daily-popup-inner">
+      <div class="daily-header">&#x1F381; Login Diario!</div>
+      <div class="daily-streak">Dia <span class="daily-streak-num">1</span></div>
+      <div class="daily-days"></div>
+      <div class="daily-reward-text">Recompensa: <span class="daily-bonus">+5g</span></div>
+      <button class="daily-claim">Coletar!</button>
+    </div>
+  </div>
+
+  <!-- Achievement Toast -->
+  <div id="achievement-toast" class="achievement-toast">
+    <span class="ach-icon">&#x1F3C6;</span>
+    <div class="ach-text">
+      <div class="ach-title">Achievement!</div>
+      <div class="ach-desc">Description</div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
